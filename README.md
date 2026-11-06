@@ -1,51 +1,51 @@
 # Adventure Games
 
-Adventure Games is a web application that allows users to play various games. It provides a selection of games, each accessible through a button on the sidebar. When a user selects a game, the corresponding iframe is loaded to allow gameplay.
+A single page that bundles four small browser games. Pick a game from the sidebar and it loads in an iframe next to it.
 
-## Features
+**Live demo:** https://akshaytripathiai.github.io/Adventure-Game/
 
-- Selection of multiple game modes.
-- Dynamic loading of game content using iframes.
-- Responsive layout with a left sidebar for game selection.
-- Default image displayed when no game is selected.
+![Game 1](screenshots/game1.png)
 
-## Technologies Used
+## Games
 
-- HTML
-- CSS (with Flexbox layout)
-- JavaScript
+| Button | Game | Controls | Standalone repo |
+|--------|------|----------|-----------------|
+| Game 1 | Basic Bheem Ladoo: reach the ladoo while dodging bouncing enemies | Hold mouse button to move | [basic-bheem-ladoo-game](https://github.com/AkshayTripathiAI/basic-bheem-ladoo-game) |
+| Game 2 | Chota Bheem Loves Ladoo: collect ladoos, avoid chasing enemies, level up | Arrow keys / touch | [Bheem-Ladoo-2](https://github.com/AkshayTripathiAI/Bheem-Ladoo-2) |
+| Game 3 | Chota Bheem Adventures: jump over a charging bull | Up arrow to jump, Left/Right to move | [Chota-Bheem-Adventure-game](https://github.com/AkshayTripathiAI/Chota-Bheem-Adventure-game) |
+| Game 4 | Gravity Ball: side-scrolling level where you flip gravity to get past walls | Left/Right arrows, Space to flip gravity | - |
 
-## Usage
-
-1. Clone the repository to your local machine:
-
-```
-git clone https://github.com/AkshayTripathi0331/adventure-games.git
-```
-
-2. Navigate to the project directory:
-
-```
-cd adventure-games
-```
-
-3. Open `index.html` in your web browser.
-
-4. Select a game mode from the sidebar buttons to start playing.
+Games 1-3 are non-commercial, fan-made practice games based on the Chhota Bheem characters. Characters and names belong to their respective owners; this is a non-commercial fan project. Images and audio are used for learning purposes. Game 4 uses CreateJS and sound effects whose file names credit their Freesound authors.
 
 ## Screenshots
 
-![Screenshot 1](screenshots/game1.png)
-![Screenshot 2](screenshots/game2.png)
-![Screenshot 3](screenshots/game3.png)
-![Screenshot 4](screenshots/game4.png)
+| Game 2 | Game 3 | Game 4 |
+|:------:|:------:|:------:|
+| ![Game 2](screenshots/game2.png) | ![Game 3](screenshots/game3.png) | ![Game 4](screenshots/game4.png) |
 
-## Live Demo
+## Tech stack
 
-A live demo of the project is hosted on GitHub Pages: [Adventure Games](https://akshaytripathi0331.github.io/Adventure-Game/)
+- HTML, CSS (Flexbox sidebar layout), vanilla JavaScript
+- HTML5 Canvas (Games 1, 2), CSS animations (Game 3)
+- [CreateJS / PreloadJS](https://createjs.com/) loaded from CDN (Game 4)
 
+## Run locally
 
-## License
+```bash
+git clone https://github.com/AkshayTripathiAI/Adventure-Game.git
+cd Adventure-Game
+npx serve .
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Then open the printed URL and pick a game from the sidebar. Opening `index.html` directly also works for most games, but a local server is more reliable for iframes and audio.
+
+## Project structure
+
+```
+index.html     # sidebar + iframe launcher
+Game1/         # Basic Bheem Ladoo (canvas)
+Game2/         # Chota Bheem Loves Ladoo (canvas)
+Game3/         # Chota Bheem Adventures (DOM + CSS animations)
+Game4/         # Gravity Ball (CreateJS)
+screenshots/   # images used in this README
 ```
