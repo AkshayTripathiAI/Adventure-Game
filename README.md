@@ -4,7 +4,7 @@ A single page that bundles four small browser games. It opens on a welcome page 
 
 **Live demo:** https://akshaytripathiai.github.io/Adventure-Game/
 
-![Game 1](screenshots/game1.png)
+![Game 1](docs/screenshots/game1.png)
 
 ## Games
 
@@ -23,7 +23,7 @@ Games 1-3 are non-commercial, fan-made practice games based on the Chhota Bheem 
 
 | Game 2 | Game 3 | Game 4 |
 |:------:|:------:|:------:|
-| ![Game 2](screenshots/game2.png) | ![Game 3](screenshots/game3.png) | ![Game 4](screenshots/game4.png) |
+| ![Game 2](docs/screenshots/game2.png) | ![Game 3](docs/screenshots/game3.png) | ![Game 4](docs/screenshots/game4.png) |
 
 ## Tech stack
 
@@ -36,18 +36,19 @@ Games 1-3 are non-commercial, fan-made practice games based on the Chhota Bheem 
 ```bash
 git clone https://github.com/AkshayTripathiAI/Adventure-Game.git
 cd Adventure-Game
-npx serve .
+npx serve docs
 ```
 
-Then open the printed URL and pick a game. Opening `index.html` directly also works for most games, but a local server is more reliable for iframes and audio.
+Then open the printed URL and pick a game. Opening `docs/index.html` directly also works for most games, but a local server is more reliable for iframes and audio.
 
 ## Project structure
 
 ```
-index.html     # welcome page + game launcher
-Game1/         # Basic Bheem Ladoo (canvas)
-Game2/         # Chota Bheem Loves Ladoo (canvas)
-Game3/         # Chota Bheem Adventures (DOM + CSS animations)
-Game4/         # Gravity Ball (CreateJS); images and sounds in Game4/assets/
-screenshots/   # images used in this README
+docs/                # everything GitHub Pages serves
+  index.html         # welcome page + game launcher
+  Game1/             # Bheem Ladoo Dash (canvas)
+  Game2/             # Chota Bheem Loves Ladoo (canvas)
+  Game3/             # Chota Bheem Adventures (DOM sprites)
+  Game4/             # Gravity Ball (CreateJS); images and sounds in Game4/assets/
+  screenshots/       # images used here and on the welcome page
 ```
