@@ -1,26 +1,44 @@
-<html>
-	<head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<title>Gravity Ball</title>
+	<!-- CreateJS bundle (EaselJS, TweenJS, SoundJS, PreloadJS) -->
 	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
-	<script src="https://code.createjs.com/preloadjs-0.6.2.min.js"></script>
-	 <meta charset="UTF-8">
-		<title>Gravity Ball</title>
-		<link rel="stylesheet" type="text/css" href="css/style.css">
-	</head>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
 
-	<body style="background-color: black; margin-left: 17%;" onload="init();">
-  		<aside>1.0</aside>
-  		<h1>Gravity Ball</h1>
+<body onload="init(); setupControls();">
+	<header>
+		<h1>Gravity Ball</h1>
+		<div class="hud">
+			<span>Time <b id="hudTime">0:00</b></span>
+			<span>Deaths <b id="hudDeaths">0</b></span>
+			<span>Best <b id="hudBest">--</b></span>
+			<button class="icon-btn" id="newGameBtn" title="New game (R)" aria-label="New game">&#8635;</button>
+			<button class="icon-btn" id="muteBtn" title="Mute (M)" aria-label="Mute">&#128266;</button>
+		</div>
+	</header>
 
-  		
-  		<canvas id="demoCanvas" width="1000" height="500"></canvas>
-		
-		<script src="Levels/level01.js"></script>
-		<script src="game.js"></script>
+	<div id="stage">
+		<canvas id="demoCanvas" width="1000" height="500"></canvas>
+		<div id="startOverlay">
+			<h2>Gravity Ball</h2>
+			<p>Roll through the level by flipping gravity. Avoid grey walls and red hexagons, ride the cyan floors, grab silver checkpoints and reach the gold diamond as fast as you can.</p>
+			<p class="go">Click or press any key to start</p>
+		</div>
+	</div>
 
+	<div id="touchControls">
+		<button class="touch-btn" id="btnLeft" aria-label="Move left">&#9664;</button>
+		<button class="touch-btn" id="btnRight" aria-label="Move right">&#9654;</button>
+		<button class="touch-btn flip" id="btnFlip" aria-label="Flip gravity">&#8645;</button>
+	</div>
 
-		
-		<p style="color: white;" class="small">left arrow  = move left, right arrow = move right, space = change gravity</p>
+	<p class="small"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> move &middot; <kbd>Space</kbd> / <kbd>&uarr;</kbd> flip gravity &middot; after a crash <kbd>Space</kbd> = last checkpoint &middot; <kbd>R</kbd> new game &middot; <kbd>M</kbd> mute</p>
 
-	</body>
-
+	<script src="Levels/level01.js"></script>
+	<script src="game.js"></script>
+</body>
 </html>

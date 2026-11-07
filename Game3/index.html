@@ -2,35 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Chota Bheem Adventures</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-assets="assets/">
     <!-- Start Page -->
-    <div id="startPage">
+    <div id="startPage" class="screen">
         <div class="startContent">
             <h1 class="gameTitle">Chota Bheem Adventures</h1>
             <p class="gameDescription">With each powerful jump, Chota Bheem showcases his skills, dodging the bull's fierce charges and unleashing his unmatched bravery.</p>
-            <button id="startButton">Lets Run</button>
+            <p class="bestLine">Best score: <span id="bestStart">0</span></p>
+            <button id="startButton" class="btn">Lets Run</button>
+            <p class="hint"><kbd>&uarr;</kbd> / <kbd>Space</kbd> / tap to jump &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &middot; <kbd>P</kbd> pause &middot; <kbd>M</kbd> mute</p>
         </div>
     </div>
 
     <!-- Game Page -->
-    <div id="gamePage" style="display: none;">
-        <div class="gameContainer">
-            <div class="gameOver">Welcome to Chota bheem Adventures</div>
-            <div class="bheem"></div>
-            <div id="scoreCount">Your Score: 0</div>
-            <div class="bull bullAni"></div>
+    <div id="gamePage" hidden>
+        <div class="gameContainer" id="gameContainer">
+            <div class="gameOver" id="message">Jump over the bull!</div>
+            <div class="bheem" id="bheem"></div>
+            <div class="bull" id="bull"></div>
+            <div id="scoreCount">Score: <span id="score">0</span><small>Best: <span id="best">0</span></small></div>
+            <div id="hudButtons">
+                <button class="icon-btn" id="pauseBtn" title="Pause (P)" aria-label="Pause">&#10074;&#10074;</button>
+                <button class="icon-btn" id="muteBtn" title="Mute (M)" aria-label="Mute">&#128266;</button>
+            </div>
+            <div id="touchControls">
+                <button class="touch-btn" id="leftBtn" aria-label="Move left">&#9664;</button>
+                <button class="touch-btn" id="rightBtn" aria-label="Move right">&#9654;</button>
+                <button class="touch-btn jump" id="jumpBtn" aria-label="Jump">&#9650;</button>
+            </div>
         </div>
-    </div> 
-
-    <!-- Overlay with GIF Image -->
-    <div id="overlay" style="display: none;">
-        <img src="./assets/bheem.gif" alt="GIF Image">
     </div>
+
+    <!-- Pause -->
+    <div id="pauseScreen" class="screen dim" hidden>
+        <div class="panel">
+            <h2>Paused</h2>
+            <button class="btn" id="resumeButton">Resume</button>
+            <button class="btn secondary" id="restartButton1">Restart</button>
+        </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="overScreen" class="screen dim" hidden>
+        <div class="panel">
+            <h2 id="overTitle">Game Over</h2>
+            <img id="punchGif" src="assets/bheem punch.gif" alt="Bheem punching" hidden>
+            <p id="overInfo"></p>
+            <button class="btn" id="restartButton">Play Again</button>
+            <p class="hint">Press <kbd>R</kbd> or <kbd>Enter</kbd></p>
+        </div>
+    </div>
+
+    <p id="disclaimer">Non-commercial fan-made practice game. Characters belong to their respective owners.</p>
 
     <script src="script.js"></script>
 </body>

@@ -12,23 +12,74 @@ var txtcheckpoint;
 const delta = 20;
 var paused = false;
 var interval;
-var momentum;
 var spawn = {x: 0};
 var groundedup = false;
 var groundeddown = false;
 var movewalls;
 var groundedsound = false;
 var timer = 0;
-music();
+var started = false;
+var deaths = 0;
+var ASSETS = "assets/";
+var BEST_KEY = "gravityBall.bestTime";
+var MUTE_KEY = "gravityBall.muted";
+var muted = readStore(MUTE_KEY, "0") === "1";
+var bestTime = parseFloat(readStore(BEST_KEY, "0")) || 0;
 
+function readStore(key, fallback) {
+	try { var v = localStorage.getItem(key); return v === null ? fallback : v; } catch (e) { return fallback; }
+}
+function writeStore(key, value) {
+	try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+}
+
+// Background music: created lazily and only started after the first click / key press
+// (browsers block autoplay before a user gesture).
+var finntopvoid = null;
 function music() {
-	var finntopvoid = new Audio('Finntopmusic_Void.mp3');
-	finntopvoid.play();
+	if (muted) return;
+	if (!finntopvoid) {
+		finntopvoid = new Audio(ASSETS + 'Finntopmusic_Void.mp3');
+		finntopvoid.loop = true;
+		finntopvoid.volume = 0.5;
+	}
+	var p = finntopvoid.play();
+	if (p && p.catch) p.catch(function () {});
+}
+
+function sfx(file) {
+	if (muted) return;
+	var audio = new Audio(ASSETS + file);
+	var p = audio.play();
+	if (p && p.catch) p.catch(function () {});
+}
+
+function setMuted(value) {
+	muted = value;
+	writeStore(MUTE_KEY, muted ? "1" : "0");
+	var btn = document.getElementById("muteBtn");
+	if (btn) btn.innerHTML = muted ? "&#128263;" : "&#128266;";
+	if (muted) { if (finntopvoid) finntopvoid.pause(); }
+	else if (started) music();
+}
+
+function formatTime(t) {
+	var m = Math.floor(t / 60);
+	var sec = Math.floor(t % 60);
+	return m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+function startGame() {
+	if (started) return;
+	started = true;
+	document.getElementById("startOverlay").hidden = true;
+	music();
 }
 
 function init() {
     // code here.
 	stage = new createjs.Stage("demoCanvas");
+	if (createjs.Touch.isSupported()) createjs.Touch.enable(stage);
 	background();
 	starsprites = stars();
 	diamonds = points();
@@ -40,7 +91,7 @@ function init() {
 
 	txtcheckpoint = new createjs.Text("checkpoint!", "50px Arial", "White");
 	txtcheckpoint.x = -500;
-	TS135 = new createjs.Bitmap("B.TS135.png");
+	TS135 = new createjs.Bitmap(ASSETS + "B.TS135.png");
 	TS135.regX = 50;
 	TS135.regY = 50;
 	TS135.x = 100;
@@ -50,7 +101,7 @@ function init() {
 	//Let`s make her alive
 	stage.addChild(TS135);
 
-	balleye = new createjs.Bitmap("B.TS135E.png");
+	balleye = new createjs.Bitmap(ASSETS + "B.TS135E.png");
 	balleye.regX = 50;
 	balleye.regY = 50;
 	balleye.x = 100;
@@ -67,20 +118,20 @@ function init() {
 
 function loadAudio() {
   var preload = new createjs.LoadQueue();
-  preload.loadFile('406562__anthousai__hit-metallic-01.wav');
-  preload.loadFile('274183__littlerobotsoundfactory__jingle-win-synth-04.wav');
-  preload.loadFile('270404__littlerobotsoundfactory__jingle-achievement-00.wav');
-  preload.loadFile('160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
-  //preload.loadFile('Finntopmusic_Void.mp3');
+  preload.loadFile(ASSETS + '406562__anthousai__hit-metallic-01.wav');
+  preload.loadFile(ASSETS + '274183__littlerobotsoundfactory__jingle-win-synth-04.wav');
+  preload.loadFile(ASSETS + '270404__littlerobotsoundfactory__jingle-achievement-00.wav');
+  preload.loadFile(ASSETS + '160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
 }
 
 function update() {
 
-	timer+=delta/1000;
-
-	if (paused) {
+	if (paused || !started) {
 		return;
-	}	
+	}
+
+	timer+=delta/1000;
+	updateHud();	
 
 	suunta.y+=gravity*gravitydirection*delta/1000;
 
@@ -109,15 +160,14 @@ function update() {
 	starsprites.x -=0.3*suunta.x;	
 
 	for(var i = 0; i < 8; i++){
+		if (paused) { stage.update(); return; }
 		var x = Math.cos(i*Math.PI/4) * 50 + TS135.x - level.x;
 		var y = Math.sin(i*Math.PI/4) * 50 + TS135.y;
 
 		for (var j=0;j< diamonds.length;j++){
     		if(diamonds[j].hitTest(x,y)){
     			
-				let audio = new Audio('274183__littlerobotsoundfactory__jingle-win-synth-04.wav');
-				audio.loop = false;
-				audio.play();						
+				sfx('274183__littlerobotsoundfactory__jingle-win-synth-04.wav');						
 
 				spawn.x = diamonds[j].x;
     			createjs.Tween.get(txtcheckpoint)
@@ -135,9 +185,7 @@ function update() {
 
 		if(finish.hitTest(x,y)){
 
-			let audio = new Audio('270404__littlerobotsoundfactory__jingle-achievement-00.wav');
-			audio.loop = false;
-			audio.play(); 
+			sfx('270404__littlerobotsoundfactory__jingle-achievement-00.wav'); 
 
 			console.log("You are Vinner!");
 			paused = true;
@@ -154,16 +202,8 @@ function update() {
 			mt(305,230).lt(695,230).lt(695,330).lt(305,330).lt(305,230);
 			stage.addChild(againbutton);
 
-			againbutton.on("click", function(evt) {
-    		console.log("new game");
-    		timer = 0;
-    		stage.removeAllChildren();
-   			init();
-   			paused = false;
-   			gravitydirection = 1;
-   			clearInterval(interval);
-			stage.update();
-			});
+			againbutton.cursor = "pointer";
+			againbutton.on("click", function(evt) { newGame(); });
 
 			var text = new createjs.Text("Congratulations!", "60px Arial", "black");
  			text.x = 285;
@@ -187,13 +227,17 @@ function update() {
  				}
 			}
 
- 			var txt = new createjs.Text("Your time: "+ Math.round(timer / 60) + ":" + pad (Math.round(timer % 60)), "64px Arial"+ "black");
- 			txt.x = 300;
+ 			var isBest = bestTime === 0 || timer < bestTime;
+			if (isBest) { bestTime = timer; writeStore(BEST_KEY, String(timer)); }
+			updateHud();
+ 			var txt = new createjs.Text("Time " + formatTime(timer) + (isBest ? "  New best!" : "  Best " + formatTime(bestTime)), "34px Arial", "black");
+ 			txt.x = 270;
  			txt.y = 420;
  			txt.textBaseline = "alphabetic";
  			stage.addChild(txt);
 
 			stage.removeChild(finish);
+			letClicksThroughText();
 		}
 
 		floorsurface.y = TS135.y;
@@ -202,9 +246,7 @@ function update() {
 			suunta.y = 0;
 			//2 ylhäällä, 6 alhaalla
 			if(groundedsound == false){
-				let audio = new Audio('160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
-				audio.loop = false;
-				audio.play();
+				sfx('160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
 				groundedsound = true;
 			}
 
@@ -244,9 +286,7 @@ function update() {
 		if(level.hitTest(x,y)) {
 			
 			if(groundedsound == false) {
-				let audio = new Audio('406562__anthousai__hit-metallic-01.wav');
-				audio.loop = false;
-				audio.play();
+				sfx('406562__anthousai__hit-metallic-01.wav');
 				groundedsound = true;
 			}
 			
@@ -260,9 +300,7 @@ function update() {
 				if(movewalls[j].shape.hitTest(x,y-movewalls[j].shape.y)) {
 					
 					if(groundedsound == false) {
-						var audio = new Audio('406562__anthousai__hit-metallic-01.wav');
-						audio.loop = false;
-						audio.play();
+						sfx('406562__anthousai__hit-metallic-01.wav');
 						groundedsound = true;
 					}
 					
@@ -276,16 +314,12 @@ function update() {
 		suunta.y = 0;
 
 		if(groundedsound == false){
-				let audio = new Audio('160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
-				audio.loop = false;
-				audio.play();
+				sfx('160068_jorickhoofd_tube-hit-with-metal-object-soft.wav');
 				groundedsound = true;
 			}
 		/*
 		if(groundedsound == false) {
-			var audio = new Audio('406562__anthousai__hit-metallic-01.wav');
-			audio.loop = false;
-			audio.play();
+			sfx('406562__anthousai__hit-metallic-01.wav');
 			groundedsound = true;
 		}
 		*/
@@ -323,14 +357,6 @@ function update() {
 		}else{
 			suunta.momentum=0;
 		}
-	} else {
-		if (momentum < 0) {
-			momentum += 0.05;
-
-		}
-		if (momentum > 0) {
-			momentum -= 0.05;
-		}
 	}
 
 	TS135.rotation+=suunta.momentum;
@@ -341,7 +367,9 @@ function update() {
 }
 
 function gameOver() {
-	console.log("hit");
+	if (paused) return; // several hit points can collide in one frame: show one menu only
+	deaths++;
+	updateHud();
 	var menu = new createjs.Shape();
 	menu.graphics.beginFill("white");
 	menu.graphics.beginStroke("black").
@@ -359,38 +387,10 @@ function gameOver() {
 	mt(375,250).lt(625,250).lt(625,325).lt(375,325).lt(375,250);
 	stage.addChild(checkpoint);
 
-	again.on("click" , function(evt) {
-		console.log("new game");
-		stage.removeAllChildren();
-		init();
-		paused = false;
-		gravitydirection = 1;
-		clearInterval(interval);
-		stage.update();
-		
-	});
-
-	checkpoint.on("click", function(evt) {
-		console.log("Last checkpoint");
-		stage.removeAllChildren();
-		init();
-		paused = false;
-		gravitydirection = 1;
-		clearInterval(interval);
-		level.x = spawn.x;
-		finish.x = spawn.x;
-		floors.x = spawn.x;
-
-		for (j=0;j< diamonds.length;j++){
-			diamonds[j].x = spawn.x;
-		}
-
-		for (j=0;j< movewalls.length;j++){
-			movewalls[j].shape.x = spawn.x;
-		}
-
-		stage.update();
-	});
+	again.cursor = "pointer";
+	checkpoint.cursor = "pointer";
+	again.on("click", function(evt) { newGame(); });
+	checkpoint.on("click", function(evt) { restartFromCheckpoint(); });
 
 	stage.addChild(again);
 
@@ -416,7 +416,8 @@ function gameOver() {
 	stage.addChild(spacetxt);
 	
 	paused = true;
-	//game over
+	letClicksThroughText();
+	stage.update();
 
 }
 
@@ -439,33 +440,90 @@ const gravity = 9.80665;
 const speed = 5;
 var gravitydirection = 1;
 
+// Labels are drawn on top of the menu buttons; let clicks pass through them to the buttons.
+function letClicksThroughText() {
+	for (var i = 0; i < stage.children.length; i++) {
+		if (stage.children[i] instanceof createjs.Text) stage.children[i].mouseEnabled = false;
+	}
+}
+
+function resetRun() {
+	clearInterval(interval);
+	createjs.Tween.removeAllTweens();
+	stage.removeAllChildren();
+	paused = false;
+	gravitydirection = 1;
+	groundedup = false;
+	groundeddown = false;
+	groundedsound = false;
+	init();
+}
+
+function newGame() {
+	timer = 0;
+	deaths = 0;
+	spawn.x = 0;
+	resetRun();
+	updateHud();
+}
+
+function restartFromCheckpoint() {
+	resetRun();
+	level.x = spawn.x;
+	finish.x = spawn.x;
+	floors.x = spawn.x;
+	for (var j = 0; j < diamonds.length; j++) {
+		diamonds[j].x = spawn.x;
+	}
+	for (var k = 0; k < movewalls.length; k++) {
+		movewalls[k].shape.x = spawn.x;
+	}
+	stage.update();
+}
+
+function flipGravity() {
+	if (paused || !started) return;
+	gravitydirection *= -1;
+	groundeddown = false;
+	groundedup = false;
+	groundedsound = false;
+}
+
+function updateHud() {
+	var t = document.getElementById("hudTime");
+	if (!t) return;
+	t.textContent = formatTime(timer);
+	document.getElementById("hudDeaths").textContent = deaths;
+	document.getElementById("hudBest").textContent = bestTime ? formatTime(bestTime) : "--";
+}
+
 document.onkeydown = function (event) {
 	var key_press = event.keyCode;
 
+	if (key_press == space || key_press == leftkey || key_press == rightkey || key_press == upkey || key_press == downkey) {
+		event.preventDefault(); // don't scroll the page / parent frame
+	}
+
+	if (!started) {
+		startGame();
+		return;
+	}
+
+	if (key_press == 77) { // M
+		setMuted(!muted);
+		return;
+	}
+
+	if (key_press == r) { // R = new game
+		newGame();
+		return;
+	}
+
 	if (paused) {
-
 		if (key_press == space) {
-			console.log("Last checkpoint");
-			stage.removeAllChildren();
-			init();
-			paused = false;
-			gravitydirection = 1;
-			clearInterval(interval);
-			level.x = spawn.x;
-			finish.x = spawn.x;
-			floors.x = spawn.x;
-
-			for (j=0;j< diamonds.length;j++){
-				diamonds[j].x = spawn.x;
-			}
-
-
-			for (k=0;k< movewalls.length;k++) {
-				movewalls[k].shape.x = spawn.x;
-			}
-
-			stage.update();
+			restartFromCheckpoint(); // don't also flip gravity on the same key press
 		}
+		return;
 	}
 
 	if (key_press == leftkey) {
@@ -476,17 +534,41 @@ document.onkeydown = function (event) {
 		suunta.x = 1*speed;
 	}
 
-//*************************************************************************************************
-
-	if (key_press == space) {
-		//suunta.y = -1*gravitydirection*gravity;
-		gravitydirection*=-1;
-		groundeddown = false;
-		groundedup = false;
-		groundedsound = false;
+	if (key_press == space || key_press == upkey) {
+		if (!event.repeat) flipGravity();
 	}
 }
 
+// ---- On-screen / touch controls ----
+function bindHold(id, dir) {
+	var el = document.getElementById(id);
+	if (!el) return;
+	el.addEventListener("pointerdown", function (e) {
+		e.preventDefault();
+		if (!started) startGame();
+		if (!paused) suunta.x = dir * speed;
+	});
+	["pointerup", "pointercancel", "pointerleave"].forEach(function (t) {
+		el.addEventListener(t, function () { if (suunta && suunta.x === dir * speed) suunta.x = 0; });
+	});
+}
+
+function setupControls() {
+	bindHold("btnLeft", -1);
+	bindHold("btnRight", 1);
+	document.getElementById("btnFlip").addEventListener("pointerdown", function (e) {
+		e.preventDefault();
+		if (!started) { startGame(); return; }
+		if (paused) restartFromCheckpoint();
+		else flipGravity();
+	});
+	document.getElementById("startOverlay").addEventListener("click", startGame);
+	window.addEventListener("blur", function () { if (suunta) suunta.x = 0; });
+	document.getElementById("muteBtn").addEventListener("click", function () { this.blur(); setMuted(!muted); });
+	document.getElementById("newGameBtn").addEventListener("click", function () { this.blur(); if (!started) startGame(); newGame(); });
+	document.getElementById("muteBtn").innerHTML = muted ? "&#128263;" : "&#128266;";
+	updateHud();
+}
 document.onkeyup = function (event) {
 	var key_up = event.keyCode;
 
